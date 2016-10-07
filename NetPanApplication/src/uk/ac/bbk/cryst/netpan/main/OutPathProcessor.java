@@ -13,20 +13,19 @@ public class OutPathProcessor {
 	static PropertiesHelper properties = new PropertiesHelper();
 	
 	public static void main(String[] args) throws Exception {
-		// TODO Auto-generated method stub
-		//parameters
-		File pathToRead = new File(properties.getValue("factorOutputPathCTL"));
-		PredictionType type = PredictionType.CTL;
+	
+		File pathToRead = new File(properties.getValue("factorOutputPathMHCIIPan"));
+		PredictionType type = PredictionType.MHCIIPAN;
 		NetPanDataBuilder builder = new NetPanDataBuilder(type);
 		
-		//read the afp directory
+		//read the testProtein_P00451 directory
 		for(final File fileEntry : pathToRead.listFiles()){
 			if(fileEntry.isDirectory()){
-				//read the allele group directory: selectedAlleles
+				//read the allele group directory: testII
 				for(final File groupPath : fileEntry.listFiles()){
 					String groupName = groupPath.getName();
-					//read prediction files in the group:albumin_P02768_HLA-A01:01.txt 
-					List<NetPanData> netPanDataList = builder.buildFileData(type,groupPath);
+					//read prediction files in the testII folder
+					List<NetPanData> netPanDataList = builder.buildFileData(groupPath);
 					printEpitopes(netPanDataList);
 				
 				}//for

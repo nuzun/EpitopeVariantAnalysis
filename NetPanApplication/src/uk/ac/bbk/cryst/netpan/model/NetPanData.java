@@ -103,7 +103,7 @@ public abstract class NetPanData implements Comparable<NetPanData> {
 		List<PeptideData> binders = new ArrayList<PeptideData>();
 		
 		for(PeptideData peptideData : this.getPeptideList()){
-			if(((MHCPeptideData)peptideData).isStrongBinder()){
+			if(peptideData.isStrongBinder()){
 				binders.add(peptideData);
 			}
 		}
@@ -115,7 +115,7 @@ public abstract class NetPanData implements Comparable<NetPanData> {
 		List<PeptideData> binders = new ArrayList<PeptideData>();
 		
 		for(PeptideData peptideData : this.getPeptideList()){
-			if(((MHCPeptideData)peptideData).isWeakBinder()){
+			if(peptideData.isWeakBinder()){
 				binders.add(peptideData);
 			}
 		}

@@ -42,7 +42,7 @@ public class GroupDataDaoImpl {
         		continue;
         	}
     
-        	groupData.getAlleleMap().put(elements[0], Float.valueOf(elements[1]));
+        	groupData.getAlleleMap().put(String.valueOf(elements[0]), Float.valueOf(elements[1]));
         	
         }
         

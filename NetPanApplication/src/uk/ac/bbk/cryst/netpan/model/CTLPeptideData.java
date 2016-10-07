@@ -9,7 +9,6 @@ public class CTLPeptideData extends PeptideData {
 	Float cleavageScore;
 	Float combinedScore;
 	Float rankPercentage;
-	String bindingLevel;
 	
 	public Float getTapScore() {
 		return tapScore;
@@ -22,10 +21,6 @@ public class CTLPeptideData extends PeptideData {
 	}
 	public Float getRankPercentage() {
 		return rankPercentage;
-	}
-	
-	public String getBindingLevel() {
-		return bindingLevel;
 	}
 	
 	public CTLPeptideData(int rank, int startPosition,String peptide,Float mhcScore, Float tapScore, Float cleavageScore,

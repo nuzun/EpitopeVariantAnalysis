@@ -142,7 +142,7 @@ public class Pool3Generator {
         PredictionType type = PredictionType.CTL;
         NetPanDataBuilder builder = new NetPanDataBuilder(type);
         
-    	return builder.buildFileData(type, inputFileName, allele, outDir);
+    	return builder.buildFileData(inputFileName, allele, outDir);
 		 			
 	}
 

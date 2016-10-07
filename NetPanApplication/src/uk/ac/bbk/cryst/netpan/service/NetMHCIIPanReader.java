@@ -10,96 +10,99 @@ import java.util.regex.Pattern;
 import org.apache.commons.lang3.StringUtils;
 
 import uk.ac.bbk.cryst.netpan.common.PredictionType;
-import uk.ac.bbk.cryst.netpan.model.MHCIIPeptideData;
+import uk.ac.bbk.cryst.netpan.model.MHCIIPanPeptideData;
 import uk.ac.bbk.cryst.netpan.model.NetMHCIIPanData;
 import uk.ac.bbk.cryst.netpan.model.PeptideData;
 
 public class NetMHCIIPanReader extends NetPanFileReader {
-	
-	public NetMHCIIPanReader(File netMHCIIPanFile, String foundFileName, String foundAllele) throws FileNotFoundException{
-		super(PredictionType.MHCII,netMHCIIPanFile,foundFileName,foundAllele);
-			
+
+	public NetMHCIIPanReader(File netMHCIIPanFile, String foundFileName, String foundAllele)
+			throws FileNotFoundException {
+		super(PredictionType.MHCIIPAN, netMHCIIPanFile, foundFileName, foundAllele);
+
 	}
-	
-    public NetMHCIIPanData read() throws Exception{
-		
-	    NetMHCIIPanData netMHCIIPanFileData = new NetMHCIIPanData(this.allele, this.fastaFileName);
-	    
-	    //TODO: local output is different from latest web version!!!!So grab the latest from them. Resolve email issue to do that
-		String pattern = "\\s*(\\d+)" + //pos 1
-				"\\s+(\\w+\\*\\w+)" + //allele 2
-				"\\s+([a-zA-Z]+)" + //peptide 3
-				"\\s+.+" + //identity 
-				"\\s+(\\d+)" + //core start pos 4
-				"\\s+([a-zA-Z]+)" + //core peptide 5
-				"\\s+([-+]?(?:\\d*[.])?\\d+)" + //core_rel 6
-				"\\s+([-+]?(?:\\d*[.])?\\d+)" + //mhc 7
-				"\\s+([-+]?(?:\\d*[.])?\\d+)" + //IC50 8
-				"\\s+([-+]?(?:\\d*[.])?\\d+)" + //rank_percentage 9
-				"\\s+(.+)" + //exp_bind 10
-				"\\s*(?:<=\\s*(\\w+))?\\s*"; // WB or SB? 11
-		
+
+	public NetMHCIIPanData read() throws Exception {
+
+		NetMHCIIPanData netMHCIIPanFileData = new NetMHCIIPanData(this.allele, this.fastaFileName);
+
+		// 2.0 output is different from latest 3.1 version!!!!
+		// 3.1 doesn't work locally yet so use 2.0 out style, 3.1 ones are
+		// commented out
+		String pattern = "\\s*(\\d+)" + // pos 1
+				"\\s+(\\w+\\*\\w+)" + // allele 2
+				"\\s+([a-zA-Z]+)" + // peptide 3
+				"\\s+.+" + // identity
+				"\\s+(\\d+)" + // core start pos 4
+				"\\s+([a-zA-Z]+)" + // core peptide 5
+				// "\\s+([-+]?(?:\\d*[.])?\\d+)" + //core_rel
+				"\\s+([-+]?(?:\\d*[.])?\\d+)" + // mhc 6
+				"\\s+([-+]?(?:\\d*[.])?\\d+)" + // IC50 7
+				"\\s+([-+]?(?:\\d*[.])?\\d+)" + // rank_percentage 8
+				// "\\s+(.+)" + //exp_bind
+				"\\s*(?:<=\\s*(\\w+))?\\s*"; // WB or SB? 9
+
 		int counter = 1;
 		int epitopeCounter = 0;
 		List<PeptideData> peptideList = new ArrayList<PeptideData>();
-		
-		try{
-			while(scanner.hasNextLine()){
+
+		try {
+			while (scanner.hasNextLine()) {
 				String line = scanner.nextLine();
-				
-				if(!line.matches(pattern)){
+
+				if (!line.matches(pattern)) {
 					continue;
 				}
-				
-		 	    Pattern r = Pattern.compile(pattern);
-		 	    Matcher m = r.matcher(line);
-				
-		 	   if (m.find( )) {
-		 		   String startPositionTxt = m.group(1);
-		 		   //String alleleName = m.group(2);
-		 		   String peptideTxt = m.group(3);
-		 		   String coreStartPositionTxt = m.group(4);
-		 		   String corePeptideTxt = m.group(5);
-		 		   String coreRelTxt = m.group(6);
-		 		   String mhcScoreTxt = m.group(7);
-		 		   String ic50ScoreTxt = m.group(8);
-		 		   String rankPerTxt = m.group(9);
-		 		   String expBindTxt = m.group(10);
-		 		   String binder = "";
-		 		   
-		 		   if(StringUtils.isNotEmpty(m.group(11))){
-		 			  binder = m.group(11);
-		 			  epitopeCounter++;
-		 		   }
-		 		  
-		 		  PeptideData peptide = new MHCIIPeptideData(counter,Integer.valueOf(startPositionTxt), 
-		 				  peptideTxt, Integer.valueOf(coreStartPositionTxt),corePeptideTxt, Float.valueOf(coreRelTxt),
-		 				  Float.valueOf(mhcScoreTxt), Float.valueOf(ic50ScoreTxt), Float.valueOf(rankPerTxt),
-		 				 expBindTxt,binder);
-		 		   
-		 		   peptideList.add(peptide);
-		 		  
-		 		   counter++;
-	 		
-		 	   }
+
+				Pattern r = Pattern.compile(pattern);
+				Matcher m = r.matcher(line);
+
+				if (m.find()) {
+					String startPositionTxt = m.group(1);
+					// String alleleName = m.group(2);
+					String peptideTxt = m.group(3);
+					String coreStartPositionTxt = m.group(4);
+					String corePeptideTxt = m.group(5);
+					//String coreRelTxt = "";// m.group(6);
+					String mhcScoreTxt = m.group(6);
+					String ic50ScoreTxt = m.group(7);
+					String rankPerTxt = m.group(8);
+					String expBindTxt = "";// m.group(10);
+					String binder = "";
+
+					if (StringUtils.isNotEmpty(m.group(9))) {
+						binder = m.group(9);
+						epitopeCounter++;
+					}
+
+					PeptideData peptide = new MHCIIPanPeptideData(counter, Integer.valueOf(startPositionTxt),
+							peptideTxt, Integer.valueOf(coreStartPositionTxt), corePeptideTxt, Float.MIN_VALUE,
+							Float.valueOf(mhcScoreTxt), Float.valueOf(ic50ScoreTxt), Float.valueOf(rankPerTxt),
+							expBindTxt, binder);
+
+					peptideList.add(peptide);
+
+					counter++;
+
+				}
 
 			}
-			
+
 			netMHCIIPanFileData.setPeptideList(peptideList);
 			netMHCIIPanFileData.setIdentifiedEpitopes(epitopeCounter);
 		}
-		
-		catch(Exception ex){
+
+		catch (Exception ex) {
 			throw ex;
 		}
-		
-		finally{
+
+		finally {
 			close();
 		}
 		return netMHCIIPanFileData;
 	}
-	
-	public void close(){
+
+	public void close() {
 		scanner.close();
 	}
 

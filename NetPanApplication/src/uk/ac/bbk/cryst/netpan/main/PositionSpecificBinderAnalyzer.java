@@ -35,7 +35,7 @@ public class PositionSpecificBinderAnalyzer {
 				
 		//String seqFileName = proteinName + "_129";
 		NetPanDataBuilder builder = new NetPanDataBuilder(type);
-		List<NetPanData> netPanDataList = builder.buildFileData(type,pathToRead);
+		List<NetPanData> netPanDataList = builder.buildFileData(pathToRead);
 		
 		//check netpandatalist for specific locations now 
 		for(NetPanData netPanData: netPanDataList){

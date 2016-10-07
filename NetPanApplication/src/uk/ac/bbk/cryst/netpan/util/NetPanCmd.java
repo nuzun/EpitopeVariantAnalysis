@@ -14,6 +14,10 @@ import uk.ac.bbk.cryst.netpan.common.PropertiesHelper;
 public class NetPanCmd {
 
 	
+	/**
+	 * HLA-DRB11101 for MHCII-2.2
+	 * DRB1_1101 for MHCIIPan-2.0
+	 */
 	private static String generateScriptLine(PredictionType type, String scoreCode,String peptideLength, String allele,String sequenceFileFullPath,String outputFileFullPath) throws IOException{
 		
 		PropertiesHelper properties = new PropertiesHelper();
@@ -34,6 +38,12 @@ public class NetPanCmd {
 					 outputFileFullPath;
 			break;
 		case MHCII:
+			scriptLine = properties.getValue("netMHCIIScript") + " "+ ("HLA-"+ allele.replace("_", "")) + " " +
+					 peptideLength + " " + 
+					 sequenceFileFullPath + " " +
+					 outputFileFullPath;
+			break;
+		case MHCIIPAN:
 			scriptLine = properties.getValue("netMHCIIPanScript") + " "+ allele + " " +
 					 peptideLength + " " + 
 					 sequenceFileFullPath + " " +

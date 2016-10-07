@@ -39,5 +39,5 @@
 # 5 = output result file
 #
 
-/home/naz/workspace/NetPanApplication/scripts/netCTLpan -s $1 -l $2 -a $3 $4 > $5
+scripts/netCTLpan -s $1 -l $2 -a $3 $4 > $5
 

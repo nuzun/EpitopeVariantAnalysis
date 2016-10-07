@@ -14,6 +14,10 @@ import uk.ac.bbk.cryst.netpan.model.MHCPeptideData;
 import uk.ac.bbk.cryst.netpan.model.NetMHCPanData;
 import uk.ac.bbk.cryst.netpan.model.PeptideData;
 
+/*
+ * NOT COMPLETE!!!!
+ * 
+ * */
 public class NetMHCPanReader extends NetPanFileReader {
 	
 	public NetMHCPanReader(File netMHCPanFile, String foundFileName, String foundAllele) throws FileNotFoundException{
@@ -68,11 +72,13 @@ public class NetMHCPanReader extends NetPanFileReader {
 		 	    Pattern r = Pattern.compile(pattern);
 		 	    Matcher m = r.matcher(line);
 				
+		 	    //TODO this is not complete!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!USED FOR BOTH MHC AND MHCPAN
 		 	   if (m.find( )) {
 		 		   String startPositionTxt = m.group(1);
 		 		   //String alleleName = m.group(2);
 		 		   String peptideTxt = m.group(3);
-		 		   String mhcScoreTxt = m.group(4);
+		 		   String corePeptideTxt = m.group(4);
+		 		   String mhcScoreTxt = m.group(5);
 		 		   String ic50ScoreTxt = IC50Index==0 ? "0" : m.group(IC50Index);
 		 		   String binder = "";
 		 		   
@@ -82,7 +88,7 @@ public class NetMHCPanReader extends NetPanFileReader {
 		 		   }
 		 		  
 		 		   PeptideData peptide = new MHCPeptideData(counter,Integer.valueOf(startPositionTxt), 
-		 				  peptideTxt, Float.valueOf(mhcScoreTxt), Float.valueOf(ic50ScoreTxt), binder);
+		 				  peptideTxt,corePeptideTxt, Float.valueOf(mhcScoreTxt), Float.valueOf(ic50ScoreTxt), binder);
 		 		   
 		 		   peptideList.add(peptide);
 		 		  

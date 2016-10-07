@@ -37,4 +37,5 @@
 #$3 = fasta seq - filename
 #$4 = output - filename
 
-/home/naz/workspace/NetPanApplication/scripts/netMHCIIpan -a $1 -l $2 -s $3 > $4
+#scripts/netMHCIIpan -a $1 -l $2 -s $3 > $4
+scripts/netMHCIIpan -a $1 -l $2 $3 > $4

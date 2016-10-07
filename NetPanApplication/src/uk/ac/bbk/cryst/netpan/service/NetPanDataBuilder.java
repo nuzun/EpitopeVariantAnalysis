@@ -23,18 +23,44 @@ public class NetPanDataBuilder {
 		PropertiesHelper properties = new PropertiesHelper();
 		this.type = type;
 		
-		if(this.type == PredictionType.MHCII){
+		if((this.type == PredictionType.MHCII) || (this.type == PredictionType.MHCIIPAN)){
 			pattern = properties.getValue("scoreFileNamePatternMHCII");
 		}
 		else pattern = properties.getValue("scoreFileNamePatternMHCI");
 	}
 	
-	public List<NetPanData> buildFileData(PredictionType type, File outputDir) throws Exception{
+	/*
+	 * If the path is a full file path then we're reading the score file directly 
+	 * from the inner location. If it is a directory then we're reading the
+	 * folder above which is the allele file name
+	 * */
+	public List<NetPanData> buildFileData(File outputDir) throws Exception{
 		
 		List<NetPanData> netPanDataList = new ArrayList<NetPanData>();
 	
+		if(!outputDir.isDirectory()){
+			// Create a Pattern object
+	 	    Pattern r = Pattern.compile(pattern);
+	 	    // Now create matcher object.
+	 	    Matcher m = r.matcher(outputDir.getName());
+	 	    
+	 	    if (m.find( )) {
+	 	    	String foundFileName = m.group(2);
+	 	    	String foundAllele = m.group(3);
+	 	    	if(StringUtils.isNotEmpty(foundFileName)){
+	 	    		//found the file
+	 	    		//read the file and find the rank
+	 	    		//return the rank with the supertype
+	 	    		NetPanFileReader reader = NetPanFileReaderFactory.getReader(type,outputDir,foundFileName,foundAllele);
+	 	    		NetPanData netPanData  = reader.read();
+	 	    		netPanDataList.add(netPanData);
+	 	    	}
+	 	    }
+	 	    	return netPanDataList; 
+		}
+		
 		//for each file in the folder check the name
-		//if it matches our input, then find the rank of the peptide
+				//if it matches our input, then find the rank of the peptide
 		for(final File fileEntry : outputDir.listFiles()){
 	 		if(fileEntry.isDirectory()){
 	 			//System.exit(0);
@@ -70,7 +96,7 @@ public class NetPanDataBuilder {
 	}
 
 	//return single file object with the specified allele and filename
-	public  NetPanData buildFileData(PredictionType type,String fastaFileName, String alleleName, File outputDir) throws Exception{
+	public  NetPanData buildFileData(String fastaFileName, String alleleName, File outputDir) throws Exception{
 		//for each file in the folder check the name
 		//if it matches our input, then find the rank of the peptide
 		for(final File fileEntry : outputDir.listFiles()){
@@ -112,5 +138,5 @@ public class NetPanDataBuilder {
 	 	}
 		
 		return null;
-	}	
+	}
 }

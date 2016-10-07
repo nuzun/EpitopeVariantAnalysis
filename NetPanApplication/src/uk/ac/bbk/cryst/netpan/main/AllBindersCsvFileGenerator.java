@@ -41,7 +41,7 @@ public class AllBindersCsvFileGenerator {
 					//read prediction files in the group:albumin_P02768_HLA-A01:01.txt 
 					for(final File predictionFile : groupPath.listFiles()){
 						String predictionFileName = getFastaFileName(predictionFile);
-						List<NetPanData> netPanDataList = builder.buildFileData(type,groupPath);
+						List<NetPanData> netPanDataList = builder.buildFileData(groupPath);
 						generateBindersFile(type, netPanDataList, predictionFileName, groupName);
 					}
 				}//for
