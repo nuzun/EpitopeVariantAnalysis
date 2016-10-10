@@ -142,6 +142,17 @@ public abstract class NetPanData implements Comparable<NetPanData> {
 		return null;
 	}
 	
+public PeptideData getSpecificPeptideData(int position){
+		
+		for(PeptideData peptideData: this.getPeptideList()){
+			if(peptideData.getStartPosition() == position){
+				return peptideData;
+			}
+		}
+		
+		return null;
+	}
+	
 	@Override
 	public int compareTo(NetPanData other) {
 		int last = this.allele.compareTo(other.allele);

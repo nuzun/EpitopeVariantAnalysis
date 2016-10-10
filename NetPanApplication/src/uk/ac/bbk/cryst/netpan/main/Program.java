@@ -7,8 +7,8 @@ import org.apache.commons.io.FilenameUtils;
 
 import uk.ac.bbk.cryst.netpan.common.PredictionType;
 import uk.ac.bbk.cryst.netpan.common.PropertiesHelper;
-import uk.ac.bbk.cryst.netpan.dao.GroupDataDaoImpl;
-import uk.ac.bbk.cryst.netpan.model.GroupData;
+import uk.ac.bbk.cryst.netpan.dao.AlleleGroupDataDaoImpl;
+import uk.ac.bbk.cryst.netpan.model.AlleleGroupData;
 import uk.ac.bbk.cryst.netpan.util.NetPanCmd;
 
 public class Program {
@@ -33,7 +33,7 @@ public class Program {
 		String alleleFileFullPath = inputPath + "testII.csv";
 
 		// Read the alleles from region/group of alleles file
-		GroupData groupData = new GroupDataDaoImpl(alleleFileFullPath).getGroupData();
+		AlleleGroupData groupData = new AlleleGroupDataDaoImpl(alleleFileFullPath).getGroupData();
 
 		// read the input sequence(s)
 		try {

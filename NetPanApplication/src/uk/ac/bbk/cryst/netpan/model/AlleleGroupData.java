@@ -3,7 +3,7 @@ package uk.ac.bbk.cryst.netpan.model;
 import java.util.HashMap;
 import java.util.Map;
 
-public class GroupData {
+public class AlleleGroupData {
 	
 	private String group;
 	private String groupCode;

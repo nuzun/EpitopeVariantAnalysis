@@ -13,13 +13,15 @@ public abstract class NetPanFileReader {
 	Scanner scanner;
 	File netFile;
 	String fastaFileName;
+	String proteinNameAndId;
 	String allele;
 	PredictionType type;
 	
-	public NetPanFileReader(PredictionType type,File netFile, String foundFileName, String foundAllele) throws FileNotFoundException{
+	public NetPanFileReader(PredictionType type,File netFile, String foundProteinNameAndId, String foundAllele) throws FileNotFoundException{
 		this.type = type;
 		this.netFile = netFile;
-		this.fastaFileName = foundFileName;
+		this.fastaFileName = netFile.getName();
+		this.proteinNameAndId = foundProteinNameAndId;
 		this.allele = foundAllele;
 		this.scanner = new Scanner(new FileReader(netFile));
 	}

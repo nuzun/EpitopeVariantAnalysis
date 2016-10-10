@@ -4,23 +4,23 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.Scanner;
 
-import uk.ac.bbk.cryst.netpan.model.GroupData;
+import uk.ac.bbk.cryst.netpan.model.AlleleGroupData;
 
-public class GroupDataDaoImpl {
+public class AlleleGroupDataDaoImpl {
 
-	GroupData groupData; 
+	AlleleGroupData groupData; 
 	String groupFile;
 	
-	public GroupData getGroupData() {
+	public AlleleGroupData getGroupData() {
 		return groupData;
 	}
 	public String getGroupFile() {
 		return groupFile;
 	}
 	
-	public GroupDataDaoImpl(String groupFile) throws FileNotFoundException{
+	public AlleleGroupDataDaoImpl(String groupFile) throws FileNotFoundException{
 		this.groupFile = groupFile;
-		this.groupData = new GroupData();
+		this.groupData = new AlleleGroupData();
 		
 		//Get scanner instance
 		File csvFile = new File(getGroupFile());
