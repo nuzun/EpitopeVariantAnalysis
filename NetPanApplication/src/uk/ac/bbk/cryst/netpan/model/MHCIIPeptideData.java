@@ -27,6 +27,10 @@ public class MHCIIPeptideData extends PeptideData {
 
 	}
 
+	public MHCIIPeptideData() {
+		// TODO Auto-generated constructor stub
+	}
+
 	public String getCorePeptide() {
 		return corePeptide;
 	}
@@ -57,12 +61,6 @@ public class MHCIIPeptideData extends PeptideData {
 
 	public void setIdentity(String identity) {
 		this.identity = identity;
-	}
-
-	@Override
-	public int compareTo(PeptideData o) {
-		// TODO Auto-generated method stub
-		return 0;
 	}
 
 	@Override
@@ -99,6 +97,7 @@ public class MHCIIPeptideData extends PeptideData {
 		builder.append(startPosition);
 		builder.append(peptide);
 		builder.append(corePeptide);
+		builder.append(coreStartPosition);
 		builder.append(mhcScore);
 		builder.append(IC50Score);
 		builder.append(rankPercentage);
@@ -117,6 +116,7 @@ public class MHCIIPeptideData extends PeptideData {
 			builder.append(this.startPosition, other.startPosition);
 			builder.append(this.peptide, other.peptide);
 			builder.append(this.corePeptide, other.corePeptide);
+			builder.append(this.coreStartPosition, other.coreStartPosition);
 			builder.append(this.mhcScore, other.mhcScore);
 			builder.append(this.IC50Score, other.IC50Score);
 			builder.append(this.rankPercentage, other.rankPercentage);
@@ -127,4 +127,10 @@ public class MHCIIPeptideData extends PeptideData {
 		return false;
 
 	}
+	
+	@Override
+	public int compareTo(PeptideData other) {
+		return this.getIC50Score() < other.getIC50Score() ? -1 : (this.getIC50Score() > other.getIC50Score() ? 1 :0);
+	}
+
 }

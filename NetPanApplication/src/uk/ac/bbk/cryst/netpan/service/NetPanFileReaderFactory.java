@@ -7,18 +7,18 @@ import uk.ac.bbk.cryst.netpan.common.PredictionType;
 
 public class NetPanFileReaderFactory {
 
-	public static NetPanFileReader getReader(PredictionType type,File netFile, String foundFileName, String foundAllele) throws FileNotFoundException{
+	public static NetPanFileReader getReader(PredictionType type,File netFile, String foundProteinNameAndId, String foundAllele) throws FileNotFoundException{
 		switch (type){
 			case CTL:
 			case CTLPAN:
-				return new NetCTLPanReader(netFile,foundFileName,foundAllele);
+				return new NetCTLPanReader(netFile,foundProteinNameAndId,foundAllele);
 			case MHCI:
 			case MHCIPAN:
-				return new NetMHCPanReader(netFile, foundFileName, foundAllele);
+				return new NetMHCPanReader(netFile, foundProteinNameAndId, foundAllele);
 			case MHCII:
-				return new NetMHCIIReader(netFile, foundFileName, foundAllele);
+				return new NetMHCIIReader(netFile, foundProteinNameAndId, foundAllele);
 			case MHCIIPAN:
-				return new NetMHCIIPanReader(netFile, foundFileName, foundAllele);
+				return new NetMHCIIPanReader(netFile, foundProteinNameAndId, foundAllele);
 			default: 
 				return null;
 		}

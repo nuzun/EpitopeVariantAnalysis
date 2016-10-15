@@ -44,12 +44,6 @@ public class MHCIIPanPeptideData extends MHCIIPeptideData{
 	}
 
 	@Override
-	public int compareTo(PeptideData arg0) {
-		// TODO Auto-generated method stub
-		return 0;
-	}
-
-	@Override
 	public String toString() {
 		String out = 
 				" rank:" + this.getRank() +

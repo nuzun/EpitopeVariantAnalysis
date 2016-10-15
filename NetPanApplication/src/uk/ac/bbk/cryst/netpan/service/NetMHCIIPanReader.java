@@ -16,9 +16,9 @@ import uk.ac.bbk.cryst.netpan.model.PeptideData;
 
 public class NetMHCIIPanReader extends NetPanFileReader {
 
-	public NetMHCIIPanReader(File netMHCIIPanFile, String foundFileName, String foundAllele)
+	public NetMHCIIPanReader(File netMHCIIPanFile, String foundProteinNameAndId, String foundAllele)
 			throws FileNotFoundException {
-		super(PredictionType.MHCIIPAN, netMHCIIPanFile, foundFileName, foundAllele);
+		super(PredictionType.MHCIIPAN, netMHCIIPanFile, foundProteinNameAndId, foundAllele);
 
 	}
 

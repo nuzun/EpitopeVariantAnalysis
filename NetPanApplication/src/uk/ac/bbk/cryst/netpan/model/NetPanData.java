@@ -75,6 +75,21 @@ public abstract class NetPanData implements Comparable<NetPanData> {
 		return peptideDataList;
 	}
 	
+	
+	public List<MHCIIPeptideData>  getSpecificPeptideDataByCore(String corePeptideStr){
+		List<MHCIIPeptideData> peptideDataList = new ArrayList<MHCIIPeptideData>();
+		
+		for(PeptideData peptideData: this.peptideList){
+			if(peptideData instanceof MHCIIPeptideData){
+				MHCIIPeptideData newPep = (MHCIIPeptideData)peptideData;
+				if(StringUtils.equals(newPep.getCorePeptide(),StringUtils.trim(corePeptideStr))){
+					peptideDataList.add(newPep);
+				}
+			}
+		}
+		return peptideDataList;
+	}
+	
 	private boolean isDuplicate(List<PeptideData> peptideDataList,
 			PeptideData peptideData) {
 		
@@ -131,6 +146,7 @@ public abstract class NetPanData implements Comparable<NetPanData> {
 		return binders.subList(0, n);
 	}
 	
+
 	public PeptideData getSpecificPeptideData(String peptide, int position){
 		
 		for(PeptideData peptideData: this.getPeptideList()){
