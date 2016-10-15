@@ -40,7 +40,51 @@ public class SequenceComparator {
 	public void setCompareFileType(FastaFileType compareFileType) {
 		this.compareFileType = compareFileType;
 	}
+	
+	
+	public List<Sequence> runMatchFinder(File inputFile, String comparePath, List<Integer> positions,
+			boolean isMatch, int kmer) throws IOException {
+		List<Sequence> matchList = new ArrayList<Sequence>();
 
+		SequenceFactory sequenceFactory = new SequenceFactory();
+		// read the dir and the first file as we know there is only one for the
+		// first file
+		Sequence seq1 = sequenceFactory.getSequenceList(inputFile, inputFileType).get(0);
+
+		// read the compareDir and all the files as there might be more than one
+		File compareDir = new File(comparePath);
+		for (final File fileEntry : compareDir.listFiles()) {
+			List<Sequence> tempList = sequenceFactory.getSequenceList(fileEntry, compareFileType);
+			seq2List.addAll(tempList);
+		}
+
+		// compare seq1 to each seq2,
+		for (Sequence seq2 : seq2List) {
+
+			List<MatchData> matchMap = SequenceComparator.generateMatchMap(seq1, seq2, positions, isMatch, kmer);
+
+			if (SequenceComparator.isIdentical(seq1, seq2)) {
+				//LOGGER.info(seq1.getProteinId() + " vs " + seq2.getProteinId() + " = IDENTICAL");
+				continue;
+			}
+
+			if (matchMap.size() == 0) {
+				//LOGGER.info(seq1.getProteinId() + " vs " + seq2.getProteinId() + " = NO MATCHES");
+				continue;
+			}
+
+			//there is a match
+			matchList.add(seq2);
+
+		}
+		return matchList;
+
+	}
+	
+
+	/*
+	 * prints the results to a csv file
+	 */
 	public void runMatchFinder(File inputFile, String comparePath, String outPath, List<Integer> positions,
 			boolean isMatch, int kmer) throws IOException {
 
@@ -84,12 +128,12 @@ public class SequenceComparator {
 			List<MatchData> matchMap = SequenceComparator.generateMatchMap(seq1, seq2, positions, isMatch, kmer);
 
 			if (SequenceComparator.isIdentical(seq1, seq2)) {
-				LOGGER.info(seq1.getProteinId() + " vs " + seq2.getProteinId() + " = IDENTICAL");
+				//LOGGER.info(seq1.getProteinId() + " vs " + seq2.getProteinId() + " = IDENTICAL");
 				continue;
 			}
 
 			if (matchMap.size() == 0) {
-				LOGGER.info(seq1.getProteinId() + " vs " + seq2.getProteinId() + " = NO MATCHES");
+				//LOGGER.info(seq1.getProteinId() + " vs " + seq2.getProteinId() + " = NO MATCHES");
 				continue;
 			}
 
