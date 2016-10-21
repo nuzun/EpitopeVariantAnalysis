@@ -10,7 +10,6 @@ import java.util.Map;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.lang3.StringUtils;
 
 import uk.ac.bbk.cryst.netpan.common.PredictionType;
 import uk.ac.bbk.cryst.netpan.common.PropertiesHelper;
@@ -37,95 +36,187 @@ import uk.ac.bbk.cryst.sequenceanalysis.service.SequenceFactory;
  */
 public class NovelSurfaceAnalyzer {
 	// parameters
-	static int nMer = 15;
-	static String proteinNameAndId = "testProtein_P00451";
-	static String scoreCode = "0"; // MHC(1) or comb (0) used for CTL only
-	static PredictionType type = PredictionType.MHCIIPAN;
-	static String[] variants = { "R-30-C" };
+	int nMer;
+	String sequenceFileName;
+	String scoreCode;
+	PredictionType type;
+	List<String> variants;
 
-	static PropertiesHelper properties = new PropertiesHelper();
-	static SequenceFactory sequenceFactory = new SequenceFactory();
+	PropertiesHelper properties;
+	SequenceFactory sequenceFactory;
 
-	public static void generateSequenceAndScoreFiles() throws Exception {
+	String alleleFileFullPath;
+	String sequenceFileFullPath;
+	String variantOutputFullPathMHCIIPan;
+	String endogenousOutputFullPathMHCIIPan;
 
-		// Read the alleles from region/group of alleles file
-		String alleleFileFullPath = properties.getValue("alleleFileFullPath");
-		AlleleGroupData groupData = new AlleleGroupDataDaoImpl(alleleFileFullPath).getGroupData();
+	String variantSequencePath;
+	String comparePath;
+
+	String proteomeOutputFullPathMHCIIPan;
+	String tmpSequencePath;
+	String proteomeSequencePath;
+
+	public String getProteomeSequencePath() {
+		return proteomeSequencePath;
+	}
+
+	public String getTmpSequencePath() {
+		return tmpSequencePath;
+	}
+
+	public String getProteomeOutputFullPathMHCIIPan() {
+		return proteomeOutputFullPathMHCIIPan;
+	}
+
+	public String getComparePath() {
+		return comparePath;
+	}
+
+	public String getVariantSequencePath() {
+		//not used at the moment
+		return variantSequencePath;
+	}
+
+	public String getAlleleFileFullPath() {
+		return alleleFileFullPath;
+	}
+
+	public String getSequenceFileFullPath() {
+		return sequenceFileFullPath;
+	}
+
+	public String getVariantOutputFullPathMHCIIPan() {
+		return variantOutputFullPathMHCIIPan;
+	}
+
+	public String getEndogenousOutputFullPathMHCIIPan() {
+		return endogenousOutputFullPathMHCIIPan;
+	}
+
+	public int getnMer() {
+		return nMer;
+	}
+
+	public String getSequenceFileName() {
+		return sequenceFileName;
+	}
+
+	public String getScoreCode() {
+		return scoreCode;
+	}
+
+	public PredictionType getType() {
+		return type;
+	}
+
+	public List<String> getVariants() {
+		return variants;
+	}
+
+	public PropertiesHelper getProperties() {
+		return properties;
+	}
+
+	public SequenceFactory getSequenceFactory() {
+		return sequenceFactory;
+	}
+
+	public NovelSurfaceAnalyzer() throws IOException {
+		nMer = 15;
+		sequenceFileName = "testProtein_P00451.fasta";
+		scoreCode = "0"; // MHC(1) or comb (0) used for CTL only
+		type = PredictionType.MHCIIPAN;
+		variants = new ArrayList<String>();
+		variants.add("R-30-C");
+
+		properties = new PropertiesHelper();
+		sequenceFactory = new SequenceFactory();
+
+		alleleFileFullPath = properties.getValue("alleleFileFullPath");
+		sequenceFileFullPath = properties.getValue("sequenceFileFullPath");
+		comparePath = properties.getValue("comparePath");
+		tmpSequencePath = properties.getValue("tmpSequencePath");
+		proteomeSequencePath = properties.getValue("proteomeSequencePath");
+
+		variantOutputFullPathMHCIIPan = properties.getValue("variantOutputFullPathMHCIIPan");
+		endogenousOutputFullPathMHCIIPan = properties.getValue("endogenousOutputFullPathMHCIIPan");
+		proteomeOutputFullPathMHCIIPan = properties.getValue("proteomeOutputFullPathMHCIIPan");
+
+	}
+
+	public void generateSequenceAndScoreFiles() throws Exception {
+
+		// Read the alleles straight from region/group of alleles file
+		AlleleGroupData groupData = new AlleleGroupDataDaoImpl(this.getAlleleFileFullPath()).getGroupData();
 
 		// Read the sequence file test_P00451.fasta
-		File sequenceFile = new File(properties.getValue("sequenceFileFullPath"));
-		Sequence inputSequence = sequenceFactory.getSequenceList(sequenceFile, FastaFileType.UNIPROT).get(0);
-		String sequenceFileName = sequenceFile.getName(); // test_P00451.fasta
-		String variantOutputFullPathMHCIIPan = properties.getValue("variantOutputFullPathMHCIIPan");
-		String endogenousOutputFullPathMHCIIPan = properties.getValue("endogenousOutputFullPathMHCIIPan");
+		File sequenceFile = new File(this.getSequenceFileFullPath());
+		Sequence inputSequence = this.getSequenceFactory().getSequenceList(sequenceFile, FastaFileType.UNIPROT).get(0);
 
 		// Work on variants
-		for (String variant : variants) {
+		for (String variant : this.getVariants()) {
 			String[] parts = variant.split("-");
 			String from = parts[0];
 			int variantPosition = Integer.valueOf(parts[1]);
 			String to = parts[2];
 
 			// calculate variant subSeq file
-			String subSequence = inputSequence.getSequence().substring(variantPosition - nMer,
-					variantPosition + nMer - 1);
+			String subSequence = inputSequence.getSequence().substring(variantPosition - this.getnMer(),
+					variantPosition + this.getnMer() - 1);
 			String variantFilefullContent = ">sp|" + inputSequence.getProteinId() + "|" + variantPosition + " " + "\n"
 					+ subSequence;
-			String variantFileName = sequenceFileName + "_" + variantPosition; // testProtein_P00451.fasta_20
-			File variantSequenceFile = new File(properties.getValue("variantSequencePath") + variantFileName);
+			String variantFileName = this.getSequenceFileName() + "_" + variantPosition; // testProtein_P00451.fasta_20
+			File variantSequenceFile = new File(this.getVariantSequencePath() + variantFileName);
 			FileHelper.writeToFile(variantSequenceFile, variantFilefullContent);
 
-			// for each allele, generate the scores
+			// for each allele, generate the scores for variants
 			String variantOutputFileFullPath = "";
 			for (String allele : groupData.getAlleleMap().keySet()) {
 
-				variantOutputFileFullPath = variantOutputFullPathMHCIIPan
-						+ FilenameUtils.removeExtension(sequenceFileName) + "_" + allele + ".txt" + "_"
+				variantOutputFileFullPath = this.getVariantOutputFullPathMHCIIPan()
+						+ FilenameUtils.removeExtension(this.getSequenceFileName()) + "_" + allele + ".txt" + "_"
 						+ variantPosition;
 				System.out.println(variantOutputFileFullPath);
-				NetPanCmd.run(type, scoreCode, String.valueOf(nMer), allele, variantSequenceFile.getPath(),
-						variantOutputFileFullPath);
+				NetPanCmd.run(this.getType(), this.getScoreCode(), String.valueOf(this.getnMer()), allele,
+						variantSequenceFile.getPath(), variantOutputFileFullPath);
 			}
 
-			// generate endogeneous sequence and score files
-			// replace position nMer-1 with the patient's mutation
-			Sequence variantSequence = sequenceFactory.getSequenceList(variantSequenceFile, FastaFileType.UNIPROT)
-					.get(0);
-			StringBuilder endSeq = new StringBuilder(variantSequence.getSequence());
-			endSeq.setCharAt(nMer - 1, to.charAt(0));
+			/************************************************************************/
 
+			// generate endogeneous sequence file
+			Sequence variantSequence = this.getSequenceFactory()
+					.getSequenceList(variantSequenceFile, FastaFileType.UNIPROT).get(0);
+			StringBuilder endSeq = new StringBuilder(variantSequence.getSequence());
+			endSeq.setCharAt(this.getnMer() - 1, to.charAt(0));
 			String endFilefullContent = ">sp|" + inputSequence.getProteinId() + "|" + variantPosition + " " + from + "_"
 					+ to + "\n" + endSeq.toString();
-
-			String endFileName = sequenceFileName + "_" + variantPosition + from + to; // testProtein_P00451.fasta_20AC
-			File endSequenceFile = new File(properties.getValue("variantSequencePath") + endFileName);
+			String endFileName = this.getSequenceFileName() + "_" + variantPosition + from + to; // testProtein_P00451.fasta_20AC
+			File endSequenceFile = new File(this.getVariantSequencePath() + endFileName);
 			FileHelper.writeToFile(endSequenceFile, endFilefullContent);
 
+			// for each allele, generate the scores for endogeneous
 			String endogeneousOutputFileFullPath = "";
-			// for each allele, generate the scores
 			for (String allele : groupData.getAlleleMap().keySet()) {
 
-				endogeneousOutputFileFullPath = endogenousOutputFullPathMHCIIPan
-						+ FilenameUtils.removeExtension(sequenceFileName) + "_" + allele + ".txt" + "_"
+				endogeneousOutputFileFullPath = this.getEndogenousOutputFullPathMHCIIPan()
+						+ FilenameUtils.removeExtension(this.getSequenceFileName()) + "_" + allele + ".txt" + "_"
 						+ variantPosition + from + to;
 				System.out.println(endogeneousOutputFileFullPath);
-				NetPanCmd.run(type, scoreCode, String.valueOf(nMer), allele, endSequenceFile.getPath(),
-						endogeneousOutputFileFullPath);
+				NetPanCmd.run(this.getType(), this.getScoreCode(), String.valueOf(this.getnMer()), allele,
+						endSequenceFile.getPath(), endogeneousOutputFileFullPath);
+
 			}
 		} // variants
 	}
 
-	public static void runEliminate() throws Exception {
-		// start eliminate // read scorefiles
-		// Read the alleles from region/group of alleles file
-		String alleleFileFullPath = properties.getValue("alleleFileFullPath");
-		AlleleGroupData groupData = new AlleleGroupDataDaoImpl(alleleFileFullPath).getGroupData();
+	public void runEliminate() throws Exception {
 
-		NetPanDataBuilder builder = new NetPanDataBuilder(type);
-		String variantOutputFullPathMHCIIPan = properties.getValue("variantOutputFullPathMHCIIPan");
-		String endogenousOutputFullPathMHCIIPan = properties.getValue("endogenousOutputFullPathMHCIIPan");
+		AlleleGroupData groupData = new AlleleGroupDataDaoImpl(this.getAlleleFileFullPath()).getGroupData();
 
-		for (String variant : variants) {
+		NetPanDataBuilder builder = new NetPanDataBuilder(this.getType());
+
+		for (String variant : this.getVariants()) {
 			String[] parts = variant.split("-");
 			String from = parts[0];
 			int variantPosition = Integer.valueOf(parts[1]);
@@ -134,25 +225,34 @@ public class NovelSurfaceAnalyzer {
 			for (String allele : groupData.getAlleleMap().keySet()) {
 				List<MHCIIPeptideData> remainingPeptides = new ArrayList<MHCIIPeptideData>();
 
-				String fileName = proteinNameAndId + "_" + allele + ".txt_" + variantPosition;
+				String fileName = FilenameUtils.removeExtension(this.getSequenceFileName()) + "_" + allele + ".txt_"
+						+ variantPosition;
 				NetPanData variantNetPanData = builder
-						.buildSingleFileData(new File(variantOutputFullPathMHCIIPan + fileName));
+						.buildSingleFileData(new File(this.getVariantOutputFullPathMHCIIPan() + fileName));
+
 				for (PeptideData peptide : variantNetPanData.getPeptideList()) {
 					MHCIIPeptideData newPeptide = (MHCIIPeptideData) peptide;
 					int posToCheck = newPeptide.getStartPosition() + newPeptide.getCoreStartPosition();
 
-					if ((posToCheck > (nMer - 10)) && (posToCheck < nMer) && (newPeptide.getIC50Score() < 1000)) {
-						// check endo criteria
+					// continue if the core contains the variant and binds
+					// efficiently
+					if ((posToCheck > (this.getnMer() - 10)) && (posToCheck < this.getnMer())
+							&& (newPeptide.getIC50Score() < 1000)) {
 
+						// check endo criteria
 						String endoFileName = fileName + from + to;
-						NetPanData endoNetPanData = builder
-								.buildSingleFileData(new File(endogenousOutputFullPathMHCIIPan + endoFileName));
+						NetPanData endoNetPanData = builder.buildSingleFileData(
+								new File(this.getEndogenousOutputFullPathMHCIIPan() + endoFileName));
 						MHCIIPeptideData endoNewPeptide = (MHCIIPeptideData) (endoNetPanData
 								.getSpecificPeptideData(peptide.getStartPosition()));
+
+						// continue if the core is the same
 						if ((endoNewPeptide.getCoreStartPosition() == newPeptide.getCoreStartPosition())) {
+
 							if (endoNewPeptide.getIC50Score() > 1000) {
-								// add the newPeptide
-								//System.out.println(newPeptide.toString());
+								// add the newPeptide to the list for proteome
+								// check
+								// System.out.println(newPeptide.toString());
 								remainingPeptides.add(newPeptide);
 							}
 
@@ -160,42 +260,38 @@ public class NovelSurfaceAnalyzer {
 								// check MHC/TCR
 								int checkPos = endoNewPeptide.getStartPosition()
 										+ endoNewPeptide.getCoreStartPosition();
-								if (checkPos == (nMer - 9) || checkPos == (nMer - 6) || checkPos == (nMer - 4)
-										|| checkPos == (nMer - 1)) {
-									// eliminate
+								if (checkPos == (this.getnMer() - 9) || checkPos == (this.getnMer() - 6)
+										|| checkPos == (this.getnMer() - 4) || checkPos == (this.getnMer() - 1)) {
+									// eliminate it is not novel
 								} else {
-									// add newPeptide
-									//System.out.println(newPeptide.toString());
+									// add newPeptide to the list for proteome
+									// check
+									// System.out.println(newPeptide.toString());
 									remainingPeptides.add(newPeptide);
-
 								}
-
 							}
 						}
 						// TODO :else what to do if the core of the endo and
 						// therapeutic is not the same????
 					}
-
 				}
-
 				// start proteome check:
 				runProteomeCheck(allele, variant, remainingPeptides);
-
 			}
-		}
+		} // variant
 	}
 
-	private static void runProteomeCheck(String allele, String variant, List<MHCIIPeptideData> remainingPeptides)
+	private void runProteomeCheck(String allele, String variant, List<MHCIIPeptideData> remainingPeptides)
 			throws Exception {
-		// TODO Auto-generated method stub
-		int coreNMer = 9;
-		boolean isMatch = false;// positions below do not have to match so false
-		List<Integer> positions = Arrays.asList(1, 4, 6, 9);
-		List<Sequence> matchList = new ArrayList<Sequence>();
-		NetPanDataBuilder builder = new NetPanDataBuilder(type);
 
-		String comparePath = properties.getValue("comparePath");
-		String proteomeOutputFullPathMHCIIPan = properties.getValue("proteomeOutputFullPathMHCIIPan");
+		int coreNMer = 9;
+		boolean isMatch = false;// positions do not have to match so false
+		List<Integer> positions = Arrays.asList(1, 4, 6, 9);
+
+		List<Sequence> matchList = new ArrayList<Sequence>();
+		NetPanDataBuilder builder = new NetPanDataBuilder(this.getType());
+		Map<MHCIIPeptideData, MHCIIPeptideData> matchMap = new HashMap<MHCIIPeptideData, MHCIIPeptideData>();
+		Map<String, MHCIIPeptideData> tempMap = new HashMap<String, MHCIIPeptideData>();
 
 		SequenceComparator sequenceComparator = new SequenceComparator();
 		sequenceComparator.setInputFileType(FastaFileType.UNIPROT);
@@ -207,18 +303,16 @@ public class NovelSurfaceAnalyzer {
 
 		MHCIIPeptideData pep1 = new MHCIIPeptideData();
 		MHCIIPeptideData pep2 = new MHCIIPeptideData();
-		
-		pep1 = PeptideDataHelper.getTheStrongestBinderII(remainingPeptides);
 
-		Map<MHCIIPeptideData, MHCIIPeptideData> matchMap = new HashMap<MHCIIPeptideData, MHCIIPeptideData>();
-		Map<String, MHCIIPeptideData> tempMap = new HashMap<String, MHCIIPeptideData>();
+		pep1 = PeptideDataHelper.getTheStrongestBinderII(remainingPeptides);
 
 		for (MHCIIPeptideData remaining : remainingPeptides) {
 
+			// create a temporary fasta file from peptides
 			String tmpSeqFileFullContent = ">sp|" + remaining.getCorePeptide() + "|temp" + "\n"
 					+ remaining.getCorePeptide();
 			String tmpFileName = remaining.getCorePeptide() + ".fasta"; // testProtein_P00451.fasta_20AC
-			File tmpSeqFile = new File(properties.getValue("tmpSequencePath") + tmpFileName);
+			File tmpSeqFile = new File(this.getTmpSequencePath() + tmpFileName);
 
 			if (tmpSeqFile.exists()) {
 				matchMap.put(remaining, tempMap.get(remaining.getCorePeptide()));
@@ -227,7 +321,8 @@ public class NovelSurfaceAnalyzer {
 
 			FileHelper.writeToFile(tmpSeqFile, tmpSeqFileFullContent);
 
-			matchList = sequenceComparator.runMatchFinder(tmpSeqFile, comparePath, positions, isMatch, coreNMer);
+			matchList = sequenceComparator.runMatchFinder(tmpSeqFile, this.getComparePath(), positions, isMatch,
+					coreNMer);
 			// TODO: if matchList is empty for just one of the remaining do we
 			// just ignore it???
 
@@ -238,14 +333,14 @@ public class NovelSurfaceAnalyzer {
 				String proteomeSeqFileFullContent = ">sp|" + ensemblPepSeq.getProteinId() + "\n"
 						+ ensemblPepSeq.getSequence();
 				String proteomeSeqFileName = ensemblPepSeq.getProteinId() + ".fasta";
-				File proteomeSeqFile = new File(properties.getValue("proteomeSequencePath") + proteomeSeqFileName);
+				File proteomeSeqFile = new File(this.getProteomeSequencePath() + proteomeSeqFileName);
 				FileHelper.writeToFile(proteomeSeqFile, proteomeSeqFileFullContent);
 
-				String proteomeOutputFileFullPath = proteomeOutputFullPathMHCIIPan
+				String proteomeOutputFileFullPath = this.getProteomeOutputFullPathMHCIIPan()
 						+ FilenameUtils.removeExtension(proteomeSeqFileName) + "_" + allele + ".txt";
-				//System.out.println(proteomeOutputFileFullPath);
-				NetPanCmd.run(type, scoreCode, String.valueOf(nMer), allele, proteomeSeqFile.getPath(),
-						proteomeOutputFileFullPath);
+				// System.out.println(proteomeOutputFileFullPath);
+				NetPanCmd.run(this.getType(), this.getScoreCode(), String.valueOf(this.getnMer()), allele,
+						proteomeSeqFile.getPath(), proteomeOutputFileFullPath);
 
 				NetPanData protNetPanData = builder.buildSingleFileData(new File(proteomeOutputFileFullPath));
 				matchingPeptides.addAll(protNetPanData.getSpecificPeptideDataByCore(remaining.getCorePeptide()));
@@ -273,9 +368,7 @@ public class NovelSurfaceAnalyzer {
 							pep2.setIC50Score(key.getIC50Score());
 						}
 					}
-
 				}
-
 			}
 		} // for matchmap
 
@@ -293,10 +386,10 @@ public class NovelSurfaceAnalyzer {
 				novel.setColour("pep1color/pep2color");
 			}
 		}
-		
-		
-		System.out.println(novel.getPeptide1() + "\n" + novel.getPeptide2() + "\n" + novel.getVariant() + "\n" + novel.getAllele() + "\n" + novel.getColour());
-		FileUtils.cleanDirectory( new File(properties.getValue("tmpSequencePath")));
+
+		System.out.println(novel.getPeptide1() + "\n" + novel.getPeptide2() + "\n" + novel.getVariant() + "\n"
+				+ novel.getAllele() + "\n" + novel.getColour());
+		FileUtils.cleanDirectory(new File(this.getTmpSequencePath()));
 
 	}
 

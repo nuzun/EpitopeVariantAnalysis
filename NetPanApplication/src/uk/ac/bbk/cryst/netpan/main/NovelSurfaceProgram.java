@@ -1,19 +1,14 @@
 package uk.ac.bbk.cryst.netpan.main;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
-import uk.ac.bbk.cryst.netpan.model.MHCIIPeptideData;
 import uk.ac.bbk.cryst.netpan.service.NovelSurfaceAnalyzer;
 
 public class NovelSurfaceProgram {
 
 	public static void main(String[] args) throws Exception {
-		// TODO Auto-generated method stub
 		
-		//NovelSurfaceAnalyzer.generateSequenceAndScoreFiles();
-		NovelSurfaceAnalyzer.runEliminate();
+		NovelSurfaceAnalyzer novelSurfaceAnalyzer = new NovelSurfaceAnalyzer();
+		novelSurfaceAnalyzer.generateSequenceAndScoreFiles();
+		novelSurfaceAnalyzer.runEliminate();
 		
 		/*
 		MHCIIPeptideData a = new MHCIIPeptideData();
