@@ -13,8 +13,8 @@ public abstract class NetPanData implements Comparable<NetPanData> {
 	String allele;
 	String fastaFileName;
 	int identifiedEpitopes;
-	
-	public NetPanData(String allele, String fastaFileName){
+
+	public NetPanData(String allele, String fastaFileName) {
 		this.allele = allele;
 		this.fastaFileName = fastaFileName;
 	}
@@ -23,163 +23,200 @@ public abstract class NetPanData implements Comparable<NetPanData> {
 		return peptideList;
 	}
 
-
 	public void setPeptideList(List<PeptideData> peptideList) {
 		this.peptideList = peptideList;
 	}
-
 
 	public String getAllele() {
 		return allele;
 	}
 
-
 	public void setAllele(String allele) {
 		this.allele = allele;
 	}
-
 
 	public String getFastaFileName() {
 		return fastaFileName;
 	}
 
-
 	public void setFastaFileName(String fastaFileName) {
 		this.fastaFileName = fastaFileName;
 	}
-
 
 	public int getIdentifiedEpitopes() {
 		return identifiedEpitopes;
 	}
 
-
 	public void setIdentifiedEpitopes(int identifiedEpitopes) {
 		this.identifiedEpitopes = identifiedEpitopes;
 	}
 
-
-	public List<PeptideData>  getSpecificPeptideData(String peptideStr){
+	public List<PeptideData> getSpecificPeptideData(String peptideStr) {
 		List<PeptideData> peptideDataList = new ArrayList<PeptideData>();
-		
-		for(PeptideData peptideData: this.peptideList){
-			if(StringUtils.equals(peptideData.getPeptide(),StringUtils.trim(peptideStr))){
+
+		for (PeptideData peptideData : this.peptideList) {
+			if (StringUtils.equals(peptideData.getPeptide(), StringUtils.trim(peptideStr))) {
 				peptideDataList.add(peptideData);
-			}
-			else if(PeptideHelper.isSubSequence(peptideData.getPeptide(),StringUtils.trim(peptideStr))){
-				if(!isDuplicate(peptideDataList,peptideData)){
+			} else if (PeptideHelper.isSubSequence(peptideData.getPeptide(), StringUtils.trim(peptideStr))) {
+				if (!isDuplicate(peptideDataList, peptideData)) {
 					peptideDataList.add(peptideData);
 				}
 			}
 		}
 		return peptideDataList;
 	}
-	
-	
-	public List<MHCIIPeptideData>  getSpecificPeptideDataByCore(String corePeptideStr){
+
+	public List<MHCIIPeptideData> getSpecificPeptideDataByCore(String corePeptideStr) {
 		List<MHCIIPeptideData> peptideDataList = new ArrayList<MHCIIPeptideData>();
-		
-		for(PeptideData peptideData: this.peptideList){
-			if(peptideData instanceof MHCIIPeptideData){
-				MHCIIPeptideData newPep = (MHCIIPeptideData)peptideData;
-				if(StringUtils.equals(newPep.getCorePeptide(),StringUtils.trim(corePeptideStr))){
+
+		for (PeptideData peptideData : this.peptideList) {
+			if (peptideData instanceof MHCIIPeptideData) {
+				MHCIIPeptideData newPep = (MHCIIPeptideData) peptideData;
+				if (StringUtils.equals(newPep.getCorePeptide(), StringUtils.trim(corePeptideStr))) {
 					peptideDataList.add(newPep);
 				}
 			}
 		}
 		return peptideDataList;
 	}
-	
-	private boolean isDuplicate(List<PeptideData> peptideDataList,
-			PeptideData peptideData) {
-		
-		for (PeptideData item : peptideDataList){
-			if(StringUtils.equals(item.getPeptide(), peptideData.getPeptide())){
+
+	public List<MHCIIPeptideData> getSpecificPeptideDataByMaskedCore(String corePeptideStr, List<Integer> positions,
+			boolean isMatch) {
+		List<MHCIIPeptideData> peptideDataList = new ArrayList<MHCIIPeptideData>();
+
+		for (PeptideData peptideData : this.peptideList) {
+			if (peptideData instanceof MHCIIPeptideData) {
+				MHCIIPeptideData newPep = (MHCIIPeptideData) peptideData;
+				if (isMatch(newPep.getCorePeptide(), StringUtils.trim(corePeptideStr), positions, isMatch)) {
+					peptideDataList.add(newPep);
+				}
+			}
+		}
+		return peptideDataList;
+	}
+
+	public static boolean isMatch(String peptide1, String peptide2, List<Integer> positions, boolean condition) {
+		// TODO: What to do with * or the characters like B etc...
+		// Do we just ignore it and expect the same or incorporate a logic for
+		// a better comparison
+		if (condition == true) {
+			for (int position : positions) {
+				if (peptide1.charAt(position - 1) == peptide2.charAt(position - 1)) {
+					continue;
+				} else {
+					return false;
+				}
+			}
+			return true;
+		}
+
+		else {
+
+			for (int i = 0; i < peptide1.length(); i++) {
+
+				if (positions.contains(i + 1)) {
+					continue;
+				}
+				if (peptide1.charAt(i) != peptide2.charAt(i)) {
+					return false;
+				} else {
+					continue;
+				}
+			}
+
+			return true;
+
+		}
+	}
+
+	private boolean isDuplicate(List<PeptideData> peptideDataList, PeptideData peptideData) {
+
+		for (PeptideData item : peptideDataList) {
+			if (StringUtils.equals(item.getPeptide(), peptideData.getPeptide())) {
 				return true;
 			}
 		}
-		
+
 		return false;
 	}
-	
-	public List<PeptideData> getEpitopes(){
+
+	public List<PeptideData> getEpitopes() {
 		List<PeptideData> epitopes = new ArrayList<PeptideData>();
-		
-		for(PeptideData peptideData : this.getPeptideList()){
-			if(peptideData.isEpitope()){
+
+		for (PeptideData peptideData : this.getPeptideList()) {
+			if (peptideData.isEpitope()) {
 				epitopes.add(peptideData);
 			}
 		}
-		
+
 		return epitopes;
 	}
-	
-	public List<PeptideData> getStrongBinderPeptides(){
+
+	public List<PeptideData> getStrongBinderPeptides() {
 		List<PeptideData> binders = new ArrayList<PeptideData>();
-		
-		for(PeptideData peptideData : this.getPeptideList()){
-			if(peptideData.isStrongBinder()){
+
+		for (PeptideData peptideData : this.getPeptideList()) {
+			if (peptideData.isStrongBinder()) {
 				binders.add(peptideData);
 			}
 		}
-		
+
 		return binders;
 	}
-	
-	public List<PeptideData> getWeakBinderPeptides(){
+
+	public List<PeptideData> getWeakBinderPeptides() {
 		List<PeptideData> binders = new ArrayList<PeptideData>();
-		
-		for(PeptideData peptideData : this.getPeptideList()){
-			if(peptideData.isWeakBinder()){
+
+		for (PeptideData peptideData : this.getPeptideList()) {
+			if (peptideData.isWeakBinder()) {
 				binders.add(peptideData);
 			}
 		}
-		
+
 		return binders;
 	}
-	
-	public List<PeptideData> getTopNBinders(int n){
+
+	public List<PeptideData> getTopNBinders(int n) {
 		List<PeptideData> binders = new ArrayList<PeptideData>();
 		binders.addAll(this.getPeptideList());
 		Collections.sort(binders);
-		
+
 		return binders.subList(0, n);
 	}
-	
 
-	public PeptideData getSpecificPeptideData(String peptide, int position){
-		
-		for(PeptideData peptideData: this.getPeptideList()){
-			if(StringUtils.equals(peptideData.getPeptide(), peptide) && peptideData.getStartPosition() == position){
+	public PeptideData getSpecificPeptideData(String peptide, int position) {
+
+		for (PeptideData peptideData : this.getPeptideList()) {
+			if (StringUtils.equals(peptideData.getPeptide(), peptide) && peptideData.getStartPosition() == position) {
 				return peptideData;
 			}
 		}
-		
+
 		return null;
 	}
-	
-public PeptideData getSpecificPeptideData(int position){
-		
-		for(PeptideData peptideData: this.getPeptideList()){
-			if(peptideData.getStartPosition() == position){
+
+	public PeptideData getSpecificPeptideData(int position) {
+
+		for (PeptideData peptideData : this.getPeptideList()) {
+			if (peptideData.getStartPosition() == position) {
 				return peptideData;
 			}
 		}
-		
+
 		return null;
 	}
-	
+
 	@Override
 	public int compareTo(NetPanData other) {
 		int last = this.allele.compareTo(other.allele);
-        return last == 0 ? this.fastaFileName.compareTo(other.fastaFileName) : last;
+		return last == 0 ? this.fastaFileName.compareTo(other.fastaFileName) : last;
 	}
-	
-	public String toString(){
-		
-		String out = " ALLELE:"+ this.getAllele() +
-					 " SEQUENCE:"+this.getFastaFileName() +
-				     " IDENTIFIED_EPITOPES:" + this.getIdentifiedEpitopes();
+
+	public String toString() {
+
+		String out = " ALLELE:" + this.getAllele() + " SEQUENCE:" + this.getFastaFileName() + " IDENTIFIED_EPITOPES:"
+				+ this.getIdentifiedEpitopes();
 		return out;
 	}
+
 }

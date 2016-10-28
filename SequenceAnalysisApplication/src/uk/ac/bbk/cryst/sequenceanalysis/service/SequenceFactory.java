@@ -81,14 +81,21 @@ public class SequenceFactory {
 							transcriptId = headerStrings[4].replace("transcript:", "");// transcript:ENST00000390440.2
 							geneBiotype = headerStrings[5].replace("gene_biotype:", "");// gene_biotype:TR_V_gene
 							transcriptBiotype = headerStrings[6].replace("transcript_biotype:", "");// transcript_biotype:TR_V_gene
-							geneSymbol = headerStrings[7].replace("gene_symbol:", "");// gene_symbol:TRAV14DV4
+							
+							if(headerStrings.length > 7){
+								geneSymbol = headerStrings[7].replace("gene_symbol:", "");// gene_symbol:TRAV14DV4
 
-							String lineText = line.trim();
-							description = lineText.substring(lineText.lastIndexOf("description:") + 12,
+								String lineText = line.trim();
+								description = lineText.substring(lineText.lastIndexOf("description:") + 12,
 									lineText.length());
-							// description:T cell receptor alpha variable
-							// 14/delta variable 4 [Source:HGNC
-							// Symbol;Acc:HGNC:12110]
+								// description:T cell receptor alpha variable
+								// 14/delta variable 4 [Source:HGNC
+								// Symbol;Acc:HGNC:12110]
+							}
+							else{
+								geneSymbol="";
+								description="";
+							}
 						}
 					}
 				} else {

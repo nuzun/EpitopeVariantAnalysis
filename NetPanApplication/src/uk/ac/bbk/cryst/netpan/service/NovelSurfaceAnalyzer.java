@@ -74,7 +74,7 @@ public class NovelSurfaceAnalyzer {
 	}
 
 	public String getVariantSequencePath() {
-		//not used at the moment
+		// not used at the moment
 		return variantSequencePath;
 	}
 
@@ -128,7 +128,7 @@ public class NovelSurfaceAnalyzer {
 		scoreCode = "0"; // MHC(1) or comb (0) used for CTL only
 		type = PredictionType.MHCIIPAN;
 		variants = new ArrayList<String>();
-		variants.add("R-30-C");
+		variants.add("R-15-C");
 
 		properties = new PropertiesHelper();
 		sequenceFactory = new SequenceFactory();
@@ -178,8 +178,12 @@ public class NovelSurfaceAnalyzer {
 						+ FilenameUtils.removeExtension(this.getSequenceFileName()) + "_" + allele + ".txt" + "_"
 						+ variantPosition;
 				System.out.println(variantOutputFileFullPath);
-				NetPanCmd.run(this.getType(), this.getScoreCode(), String.valueOf(this.getnMer()), allele,
-						variantSequenceFile.getPath(), variantOutputFileFullPath);
+
+				File scoreFileToCreate = new File(variantOutputFileFullPath);
+				if (!scoreFileToCreate.exists()) {
+					NetPanCmd.run(this.getType(), this.getScoreCode(), String.valueOf(this.getnMer()), allele,
+							variantSequenceFile.getPath(), variantOutputFileFullPath);
+				}
 			}
 
 			/************************************************************************/
@@ -203,8 +207,12 @@ public class NovelSurfaceAnalyzer {
 						+ FilenameUtils.removeExtension(this.getSequenceFileName()) + "_" + allele + ".txt" + "_"
 						+ variantPosition + from + to;
 				System.out.println(endogeneousOutputFileFullPath);
-				NetPanCmd.run(this.getType(), this.getScoreCode(), String.valueOf(this.getnMer()), allele,
-						endSequenceFile.getPath(), endogeneousOutputFileFullPath);
+
+				File scoreFileToCreate = new File(endogeneousOutputFileFullPath);
+				if (!scoreFileToCreate.exists()) {
+					NetPanCmd.run(this.getType(), this.getScoreCode(), String.valueOf(this.getnMer()), allele,
+							endSequenceFile.getPath(), endogeneousOutputFileFullPath);
+				}
 
 			}
 		} // variants
@@ -243,38 +251,57 @@ public class NovelSurfaceAnalyzer {
 						String endoFileName = fileName + from + to;
 						NetPanData endoNetPanData = builder.buildSingleFileData(
 								new File(this.getEndogenousOutputFullPathMHCIIPan() + endoFileName));
-						MHCIIPeptideData endoNewPeptide = (MHCIIPeptideData) (endoNetPanData
-								.getSpecificPeptideData(peptide.getStartPosition()));
+						// MHCIIPeptideData endoNewPeptide = (MHCIIPeptideData)
+						// (endoNetPanData
+						// .getSpecificPeptideData(peptide.getStartPosition()));
 
-						// continue if the core is the same
-						if ((endoNewPeptide.getCoreStartPosition() == newPeptide.getCoreStartPosition())) {
+						// continue if the core is the same with any endo core
+						int variantIndexAtCore = this.getnMer() - posToCheck - 1;
+						StringBuilder endoCore = new StringBuilder(newPeptide.getCorePeptide());
+						endoCore.setCharAt(variantIndexAtCore, to.charAt(0));
+						List<MHCIIPeptideData> endoMatchList = endoNetPanData
+								.getSpecificPeptideDataByCore(endoCore.toString());
 
-							if (endoNewPeptide.getIC50Score() > 1000) {
-								// add the newPeptide to the list for proteome
-								// check
-								// System.out.println(newPeptide.toString());
+						if (endoMatchList.size() > 0) {
+							int allWeak = 1;
+							for (MHCIIPeptideData endoMatch : endoMatchList) {
+								// Check if we have at least one good binder
+								if (endoMatch.getIC50Score() < 1000) {
+									// check MHC/TCR
+									allWeak = 0;
+									int checkPos = endoMatch.getStartPosition() + endoMatch.getCoreStartPosition();
+									if (checkPos == (this.getnMer() - 9) || checkPos == (this.getnMer() - 6)
+											|| checkPos == (this.getnMer() - 4) || checkPos == (this.getnMer() - 1)) {
+										// eliminate it is not novel, mutation
+										// is on
+										// 1,4,6 or 9
+									} else {
+										// add newPeptide to the list for
+										// proteome
+										// check
+										// System.out.println(newPeptide.toString());
+										remainingPeptides.add(newPeptide);
+										break;
+									}
+								}
+							} //for
+							// not a single good binder then check proteome
+							if(allWeak == 1){
 								remainingPeptides.add(newPeptide);
 							}
-
-							else {
-								// check MHC/TCR
-								int checkPos = endoNewPeptide.getStartPosition()
-										+ endoNewPeptide.getCoreStartPosition();
-								if (checkPos == (this.getnMer() - 9) || checkPos == (this.getnMer() - 6)
-										|| checkPos == (this.getnMer() - 4) || checkPos == (this.getnMer() - 1)) {
-									// eliminate it is not novel
-								} else {
-									// add newPeptide to the list for proteome
-									// check
-									// System.out.println(newPeptide.toString());
-									remainingPeptides.add(newPeptide);
-								}
-							}
 						}
-						// TODO :else what to do if the core of the endo and
-						// therapeutic is not the same????
+
+						else {
+							remainingPeptides.add(newPeptide);
+						}
 					}
 				}
+
+				System.out.println(allele);
+				for (MHCIIPeptideData p : remainingPeptides) {
+					System.out.println(p.toString());
+				}
+
 				// start proteome check:
 				runProteomeCheck(allele, variant, remainingPeptides);
 			}
@@ -330,26 +357,54 @@ public class NovelSurfaceAnalyzer {
 			// run predictions on the matching proteome sequences
 			for (Sequence seq : matchList) {
 				EnsemblPepSequence ensemblPepSeq = (EnsemblPepSequence) seq;
-				String proteomeSeqFileFullContent = ">sp|" + ensemblPepSeq.getProteinId() + "\n"
-						+ ensemblPepSeq.getSequence();
+				String proteomeSeqFileFullContent = ">sp|" + ensemblPepSeq.getProteinId() + "|"
+						+ ensemblPepSeq.getDescription() + "\n" + ensemblPepSeq.getSequence();
 				String proteomeSeqFileName = ensemblPepSeq.getProteinId() + ".fasta";
 				File proteomeSeqFile = new File(this.getProteomeSequencePath() + proteomeSeqFileName);
-				FileHelper.writeToFile(proteomeSeqFile, proteomeSeqFileFullContent);
+
+				if (!proteomeSeqFile.exists()) {
+					FileHelper.writeToFile(proteomeSeqFile, proteomeSeqFileFullContent);
+				}
 
 				String proteomeOutputFileFullPath = this.getProteomeOutputFullPathMHCIIPan()
 						+ FilenameUtils.removeExtension(proteomeSeqFileName) + "_" + allele + ".txt";
-				// System.out.println(proteomeOutputFileFullPath);
-				NetPanCmd.run(this.getType(), this.getScoreCode(), String.valueOf(this.getnMer()), allele,
-						proteomeSeqFile.getPath(), proteomeOutputFileFullPath);
+
+				File proteomeScoreFileToCreate = new File(proteomeOutputFileFullPath);
+				if (!proteomeScoreFileToCreate.exists()) {
+					NetPanCmd.run(this.getType(), this.getScoreCode(), String.valueOf(this.getnMer()), allele,
+							proteomeSeqFile.getPath(), proteomeOutputFileFullPath);
+				}
 
 				NetPanData protNetPanData = builder.buildSingleFileData(new File(proteomeOutputFileFullPath));
-				matchingPeptides.addAll(protNetPanData.getSpecificPeptideDataByCore(remaining.getCorePeptide()));
+				// not the original core peptide but the matching one
+				System.out.println(protNetPanData.getFastaFileName());
+				System.out.println("------------------------------------------------------");
+				for (MHCIIPeptideData pep : protNetPanData
+						.getSpecificPeptideDataByMaskedCore(remaining.getCorePeptide(), positions, isMatch)) {
+					System.out.println(pep.toString());
+				}
+				System.out.println("------------------------------------------------------");
+				matchingPeptides.addAll(protNetPanData.getSpecificPeptideDataByMaskedCore(remaining.getCorePeptide(),
+						positions, isMatch));
 			}
 
 			MHCIIPeptideData bestMatch = (MHCIIPeptideData) PeptideDataHelper.getTheStrongestBinderII(matchingPeptides);
 			matchMap.put(remaining, bestMatch);
 			tempMap.put(remaining.getCorePeptide(), bestMatch);
 		}
+
+		System.out.println("-------------------------PRINTING MATCH MAP-----------------------------");
+		for (MHCIIPeptideData key : matchMap.keySet()) {
+			System.out.println("REMAINING=" + key.toString());
+			MHCIIPeptideData match = matchMap.get(key);
+			if (match != null) {
+				System.out.println("match=" + match.toString());
+			} else {
+				System.out.println("NO MATCH");
+			}
+
+		}
+		System.out.println("-------------------------END MATCH MAP-----------------------------");
 
 		int matchExists = 0;
 

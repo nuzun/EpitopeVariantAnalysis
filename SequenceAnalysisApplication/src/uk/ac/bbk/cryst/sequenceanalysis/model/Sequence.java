@@ -25,7 +25,7 @@ public abstract class Sequence {
 	protected boolean isSequenceValid(String sequence) {
 		if(sequence != null){
 			sequence = sequence.replaceAll("\\s+", "");
-			Pattern pattern = Pattern.compile("^[GAVFPMILDEKRSTYHCNQWBUXZ*]+$",Pattern.CASE_INSENSITIVE);
+			Pattern pattern = Pattern.compile("^[GAVFPMILDEKRSTYHCNQWBUXZOJ*]+$",Pattern.CASE_INSENSITIVE);
 			Matcher matcher = pattern.matcher(sequence);
 			if(matcher.matches()){
 				return true;
