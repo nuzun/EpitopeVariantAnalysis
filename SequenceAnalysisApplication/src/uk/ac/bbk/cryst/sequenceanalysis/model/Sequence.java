@@ -48,6 +48,26 @@ public abstract class Sequence {
 		return sequenceArray;
 	}
 	
+	public String getPanningSequence(int position, int nMer){
+		int startIndex = 0;
+		int endIndex = 0;
+		if(position < nMer) {
+			startIndex = 0;
+		}
+		else {
+			startIndex = position - nMer;
+		}
+		
+		if(position + nMer > this.getSequence().length()){
+			endIndex = this.getSequence().length() -1;
+		}
+		else{
+			endIndex = position + nMer - 1;
+		}
+		
+		
+		return this.getSequence().substring(startIndex, endIndex);
+	}
 	
 	public int length(){
 		return this.getSequence().length();
