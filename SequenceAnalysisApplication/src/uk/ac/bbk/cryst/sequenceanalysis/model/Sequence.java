@@ -59,10 +59,10 @@ public abstract class Sequence {
 		}
 		
 		if(position + nMer > this.getSequence().length()){
-			endIndex = this.getSequence().length() -1;
+			endIndex = this.getSequence().length();
 		}
 		else{
-			endIndex = position + nMer - 1;
+			endIndex = position + nMer -1;
 		}
 		
 		

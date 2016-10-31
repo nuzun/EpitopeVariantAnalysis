@@ -96,9 +96,7 @@ public abstract class NetPanData implements Comparable<NetPanData> {
 	}
 
 	public static boolean isMatch(String peptide1, String peptide2, List<Integer> positions, boolean condition) {
-		// TODO: What to do with * or the characters like B etc...
-		// Do we just ignore it and expect the same or incorporate a logic for
-		// a better comparison
+		// TODO: AJS confirmed exact match for * but the characters like B etc???
 		if (condition == true) {
 			for (int position : positions) {
 				if (peptide1.charAt(position - 1) == peptide2.charAt(position - 1)) {
