@@ -63,19 +63,12 @@ public class MHCIIPeptideData extends PeptideData {
 		this.identity = identity;
 	}
 
+	
 	@Override
 	public String toString() {
-		String out = " rank:" + this.getRank() + 
-				" start:" + this.getStartPosition() +
-				" peptide:" + this.getPeptide() +
-				" corePeptide:" + this.getCorePeptide()+
-				" mhc:" + this.getMhcScore()+
-				" IC50:" + this.getIC50Score() +
-				" rank percentage:" + this.getRankPercentage()+
-				" identity:" + this.getIdentity() +
-				" bindingLevel:" + this.getBindingLevel();
-		
-		return out;
+		return "MHCIIPeptideData [corePeptide=" + corePeptide + ", coreStartPosition=" + coreStartPosition + ", rank="
+				+ rank + ", startPosition=" + startPosition + ", peptide=" + peptide + ", mhcScore=" + mhcScore
+				+ ", IC50Score=" + IC50Score + ", epitope=" + epitope + ", bindingLevel=" + bindingLevel + "]";
 	}
 
 	@Override

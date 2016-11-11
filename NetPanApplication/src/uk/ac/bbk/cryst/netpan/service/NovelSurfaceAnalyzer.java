@@ -133,7 +133,7 @@ public class NovelSurfaceAnalyzer {
 	public NovelSurfaceAnalyzer() throws IOException {
 		nMer = 15;
 		anchorPositions = Arrays.asList(1, 4, 6, 9);
-		sequenceFileName = "testProtein_P00451.fasta";
+		sequenceFileName = "customFactorviii_P00451.fasta";
 		scoreCode = "0"; // MHC(1) or comb (0) used for CTL only
 		type = PredictionType.MHCIIPAN;
 		variants = new ArrayList<String>();
@@ -181,46 +181,32 @@ public class NovelSurfaceAnalyzer {
 		File sequenceFile = new File(this.getSequenceFileFullPath());
 		Sequence inputSequence = this.getSequenceFactory().getSequenceList(sequenceFile, FastaFileType.UNIPROT).get(0);
 
-		// Work on variants
+		// for each allele, generate the score file for the full sequence once
+		String variantOutputFileFullPath = "";
+		for (String allele : groupData.getAlleleMap().keySet()) {
+			variantOutputFileFullPath = this.getVariantOutputFullPathMHCIIPan()
+					+ FilenameUtils.removeExtension(this.getSequenceFileName()) + "_" + allele + ".txt";
+
+			System.out.println(variantOutputFileFullPath);
+
+			File scoreFileToCreate = new File(variantOutputFileFullPath);
+			if (!scoreFileToCreate.exists()) {
+				NetPanCmd.run(this.getType(), this.getScoreCode(), String.valueOf(this.getnMer()), allele,
+						sequenceFile.getPath(), variantOutputFileFullPath);
+			}
+		}
+
+		// Generate endogeneous versions for each variant and allele
 		for (String variant : this.getVariants()) {
 			String[] parts = variant.split("-");
 			String from = parts[0];
 			int variantPosition = Integer.valueOf(parts[1]);
 			String to = parts[2];
 
-			// calculate variant subSeq file
 			String subSequence = inputSequence.getPanningSequence(variantPosition, this.getnMer());
-			String variantFilefullContent = ">sp|" + inputSequence.getProteinId() + "|" + variantPosition + " " + "\n"
-					+ subSequence;
-			String variantFileName = this.getSequenceFileName() + "_" + variantPosition; // testProtein_P00451.fasta_20
-			File variantSequenceFile = new File(this.getVariantSequencePath() + variantFileName);
-
-			if (!variantSequenceFile.exists()) {
-				FileHelper.writeToFile(variantSequenceFile, variantFilefullContent);
-			}
-
-			// for each allele, generate the scores for variants
-			String variantOutputFileFullPath = "";
-			for (String allele : groupData.getAlleleMap().keySet()) {
-
-				variantOutputFileFullPath = this.getVariantOutputFullPathMHCIIPan()
-						+ FilenameUtils.removeExtension(this.getSequenceFileName()) + "_" + allele + ".txt" + "_"
-						+ variantPosition;
-				System.out.println(variantOutputFileFullPath);
-
-				File scoreFileToCreate = new File(variantOutputFileFullPath);
-				if (!scoreFileToCreate.exists()) {
-					NetPanCmd.run(this.getType(), this.getScoreCode(), String.valueOf(this.getnMer()), allele,
-							variantSequenceFile.getPath(), variantOutputFileFullPath);
-				}
-			}
-
-			/************************************************************************/
 
 			// generate endogeneous sequence file
-			Sequence variantSequence = this.getSequenceFactory()
-					.getSequenceList(variantSequenceFile, FastaFileType.UNIPROT).get(0);
-			StringBuilder endSeq = new StringBuilder(variantSequence.getSequence());
+			StringBuilder endSeq = new StringBuilder(subSequence);
 			int charIndex = variantPosition <= this.getnMer() ? variantPosition - 1 : this.getnMer() - 1;
 
 			endSeq.setCharAt(charIndex, to.charAt(0));
@@ -266,24 +252,22 @@ public class NovelSurfaceAnalyzer {
 			for (String allele : groupData.getAlleleMap().keySet()) {
 				List<MHCIIPeptideData> remainingPeptides = new ArrayList<MHCIIPeptideData>();
 
-				String fileName = FilenameUtils.removeExtension(this.getSequenceFileName()) + "_" + allele + ".txt_"
-						+ variantPosition;
+				String fileName = FilenameUtils.removeExtension(this.getSequenceFileName()) + "_" + allele + ".txt";
 				NetPanData variantNetPanData = builder
 						.buildSingleFileData(new File(this.getVariantOutputFullPathMHCIIPan() + fileName));
 
-				for (PeptideData peptide : variantNetPanData.getPeptideList()) {
+				for (PeptideData peptide : variantNetPanData.getPanningPeptideList(variantPosition)) {
 					MHCIIPeptideData therPeptide = (MHCIIPeptideData) peptide;
 
 					// continue if the core contains the variant and binds
-					// strong
+					// strong, note that both startPos and coreStartPos starts from 0, variantPos starts from 1
 					int start = therPeptide.getStartPosition() + therPeptide.getCoreStartPosition();
-					int localVariantPos = variantPosition < this.getnMer() ? variantPosition : this.getnMer();
-					int variantIndexAtCore = localVariantPos - start - 1; // 0-8
+					int variantIndexAtCore = variantPosition - start - 1; // 0-8
 
 					if ((9 > variantIndexAtCore) && (variantIndexAtCore >= 0) && (therPeptide.getIC50Score() < 1000)) {
 
 						// check endo criteria
-						String endoFileName = fileName + from + to;
+						String endoFileName = fileName + "_" + variantPosition + from + to;
 						NetPanData endoNetPanData = builder.buildSingleFileData(
 								new File(this.getEndogenousOutputFullPathMHCIIPan() + endoFileName));
 
@@ -321,7 +305,7 @@ public class NovelSurfaceAnalyzer {
 					}
 				}
 
-				System.out.println();
+				System.out.println(variant);
 				for (MHCIIPeptideData p : remainingPeptides) {
 					System.out.println(p.toString());
 				}
@@ -338,6 +322,10 @@ public class NovelSurfaceAnalyzer {
 
 		int coreNMer = 9;
 		boolean isMatch = false;// positions do not have to match so false
+		String[] parts = variant.split("-");
+		//String from = parts[0];
+		int variantPosition = Integer.valueOf(parts[1]);
+		//String to = parts[2];
 
 		List<Sequence> matchList = new ArrayList<Sequence>();
 		NetPanDataBuilder builder = new NetPanDataBuilder(this.getType());
@@ -379,14 +367,6 @@ public class NovelSurfaceAnalyzer {
 			// run predictions on the matching proteome sequences
 			for (Sequence seq : matchList) {
 				EnsemblPepSequence ensemblPepSeq = (EnsemblPepSequence) seq;
-
-				//TODO: Only ignore the panning area in question not the whole sequence
-				// ignore factor8
-				if (StringUtils.isNotEmpty(ensemblPepSeq.getGeneSymbol())
-						&& ensemblPepSeq.getGeneSymbol().equals("F8")) {
-					continue;
-				}
-
 				String proteomeSeqFileFullContent = ">sp|" + ensemblPepSeq.getProteinId() + "|"
 						+ ensemblPepSeq.getDescription() + "\n" + ensemblPepSeq.getSequence();
 				String proteomeSeqFileName = ensemblPepSeq.getProteinId() + ".fasta";
@@ -398,25 +378,68 @@ public class NovelSurfaceAnalyzer {
 
 				String proteomeOutputFileFullPath = this.getProteomeOutputFullPathMHCIIPan()
 						+ FilenameUtils.removeExtension(proteomeSeqFileName) + "_" + allele + ".txt";
-
 				File proteomeScoreFileToCreate = new File(proteomeOutputFileFullPath);
 				if (!proteomeScoreFileToCreate.exists()) {
 					NetPanCmd.run(this.getType(), this.getScoreCode(), String.valueOf(this.getnMer()), allele,
 							proteomeSeqFile.getPath(), proteomeOutputFileFullPath);
 				}
-
 				NetPanData protNetPanData = builder.buildSingleFileData(new File(proteomeOutputFileFullPath));
-				// not the original core peptide but the matching one
+				
+				// print the results
 				System.out.println(ensemblPepSeq.getProteinId() + ":" + ensemblPepSeq.getGeneSymbol() + ":"
 						+ ensemblPepSeq.getDescription());
 				System.out.println("------------------------------------------------------");
-				for (MHCIIPeptideData pep : protNetPanData.getSpecificPeptideDataByMaskedCore(
-						remaining.getCorePeptide(), this.getAnchorPositions(), isMatch)) {
-					System.out.println(pep.toString());
+				/*if (StringUtils.isNotEmpty(ensemblPepSeq.getGeneSymbol())
+						&& ensemblPepSeq.getGeneSymbol().equals("F8")) {
+					for (MHCIIPeptideData pep : protNetPanData.getSpecificPeptideDataByMaskedCore(
+							remaining.getCorePeptide(), this.getAnchorPositions(), isMatch, variantPosition)) {
+						System.out.println(pep.toString());
+					}
+				}
+				else{
+					for (MHCIIPeptideData pep : protNetPanData.getSpecificPeptideDataByMaskedCore(
+							remaining.getCorePeptide(), this.getAnchorPositions(), isMatch)) {
+						System.out.println(pep.toString());
+					}
 				}
 				System.out.println("------------------------------------------------------");
-				matchingPeptides.addAll(protNetPanData.getSpecificPeptideDataByMaskedCore(remaining.getCorePeptide(),
-						this.getAnchorPositions(), isMatch));
+				//
+				
+				//pass the variant position as the panning position to ignore the peptides in that section for F8
+				if (StringUtils.isNotEmpty(ensemblPepSeq.getGeneSymbol())
+						&& ensemblPepSeq.getGeneSymbol().equals("F8")) {
+					matchingPeptides.addAll(protNetPanData.getSpecificPeptideDataByMaskedCore(
+							remaining.getCorePeptide(), this.getAnchorPositions(), isMatch, variantPosition));
+				} else {
+					matchingPeptides.addAll(protNetPanData.getSpecificPeptideDataByMaskedCore(
+							remaining.getCorePeptide(), this.getAnchorPositions(), isMatch));
+				}*/
+				
+				if (StringUtils.isNotEmpty(ensemblPepSeq.getProteinId())
+						&& (ensemblPepSeq.getProteinId().startsWith("ENSP00000353393") || ensemblPepSeq.getProteinId().startsWith("ENSP00000471364"))) {
+					for (MHCIIPeptideData pep : protNetPanData.getSpecificPeptideDataByMaskedCore(
+							remaining.getCorePeptide(), this.getAnchorPositions(), isMatch, variantPosition)) {
+						System.out.println(pep.toString());
+					}
+				}
+				else{
+					for (MHCIIPeptideData pep : protNetPanData.getSpecificPeptideDataByMaskedCore(
+							remaining.getCorePeptide(), this.getAnchorPositions(), isMatch)) {
+						System.out.println(pep.toString());
+					}
+				}
+				System.out.println("------------------------------------------------------");
+				//
+				
+				//pass the variant position as the panning position to ignore the peptides in that section for F8
+				if (StringUtils.isNotEmpty(ensemblPepSeq.getProteinId())
+						&& (ensemblPepSeq.getProteinId().startsWith("ENSP00000353393") || ensemblPepSeq.getProteinId().startsWith("ENSP00000471364"))) {
+					matchingPeptides.addAll(protNetPanData.getSpecificPeptideDataByMaskedCore(
+							remaining.getCorePeptide(), this.getAnchorPositions(), isMatch, variantPosition));
+				} else {
+					matchingPeptides.addAll(protNetPanData.getSpecificPeptideDataByMaskedCore(
+							remaining.getCorePeptide(), this.getAnchorPositions(), isMatch));
+				}
 			}
 
 			MHCIIPeptideData bestMatch = (MHCIIPeptideData) PeptideDataHelper.getTheStrongestBinderII(matchingPeptides);

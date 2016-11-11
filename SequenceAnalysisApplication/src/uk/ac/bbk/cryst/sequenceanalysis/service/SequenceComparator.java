@@ -54,6 +54,10 @@ public class SequenceComparator {
 		// read the compareDir and all the files as there might be more than one
 		File compareDir = new File(comparePath);
 		for (final File fileEntry : compareDir.listFiles()) {
+			if(fileEntry.isDirectory()){
+				//ignore the directory and continue, we want one compare file
+				continue;
+			}
 			List<Sequence> tempList = sequenceFactory.getSequenceList(fileEntry, compareFileType);
 			seq2List.addAll(tempList);
 		}

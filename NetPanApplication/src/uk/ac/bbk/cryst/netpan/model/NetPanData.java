@@ -51,6 +51,27 @@ public abstract class NetPanData implements Comparable<NetPanData> {
 		this.identifiedEpitopes = identifiedEpitopes;
 	}
 
+	public int getNMer() {
+		return this.getPeptideList().get(0).getPeptide().length();
+	}
+
+	public int getSequenceLength() {
+		return this.getPeptideList().size() + this.getNMer() - 1;
+	}
+
+	public List<PeptideData> getPanningPeptideList(int panningPosition) {
+		List<PeptideData> peptideList = new ArrayList<PeptideData>();
+
+		int startIndex = panningPosition < this.getNMer() ? 0 : (panningPosition - this.getNMer());
+		int endIndex = (panningPosition + this.getNMer()) > this.getSequenceLength()
+				? (this.getSequenceLength() - this.getNMer()) : panningPosition - 1;
+
+		for (int i = startIndex; i <= endIndex; i++) {
+			peptideList.add(this.getSpecificPeptideData(i));
+		}
+		return peptideList;
+	}
+
 	public List<PeptideData> getSpecificPeptideData(String peptideStr) {
 		List<PeptideData> peptideDataList = new ArrayList<PeptideData>();
 
@@ -80,6 +101,30 @@ public abstract class NetPanData implements Comparable<NetPanData> {
 		return peptideDataList;
 	}
 
+	/*
+	 * Ignore the panning peptides
+	 */
+	public List<MHCIIPeptideData> getSpecificPeptideDataByMaskedCore(String corePeptideStr, List<Integer> positions,
+			boolean isMatch, int panningPosition) {
+		List<MHCIIPeptideData> peptideDataList = new ArrayList<MHCIIPeptideData>();
+
+		int startIndex = panningPosition < this.getNMer() ? 0 : (panningPosition - this.getNMer());
+		int endIndex = (panningPosition + this.getNMer()) > this.getSequenceLength()
+				? (this.getSequenceLength() - this.getNMer()) : panningPosition - 1;
+
+		for (PeptideData peptideData : this.peptideList) {
+			if (peptideData instanceof MHCIIPeptideData) {
+				MHCIIPeptideData newPep = (MHCIIPeptideData) peptideData;
+				if (newPep.getStartPosition() >= startIndex && newPep.getStartPosition() <= endIndex) {
+					continue;
+				} else if (isMatch(newPep.getCorePeptide(), StringUtils.trim(corePeptideStr), positions, isMatch)) {
+					peptideDataList.add(newPep);
+				}
+			}
+		}
+		return peptideDataList;
+	}
+
 	public List<MHCIIPeptideData> getSpecificPeptideDataByMaskedCore(String corePeptideStr, List<Integer> positions,
 			boolean isMatch) {
 		List<MHCIIPeptideData> peptideDataList = new ArrayList<MHCIIPeptideData>();
@@ -87,6 +132,7 @@ public abstract class NetPanData implements Comparable<NetPanData> {
 		for (PeptideData peptideData : this.peptideList) {
 			if (peptideData instanceof MHCIIPeptideData) {
 				MHCIIPeptideData newPep = (MHCIIPeptideData) peptideData;
+
 				if (isMatch(newPep.getCorePeptide(), StringUtils.trim(corePeptideStr), positions, isMatch)) {
 					peptideDataList.add(newPep);
 				}
@@ -96,7 +142,8 @@ public abstract class NetPanData implements Comparable<NetPanData> {
 	}
 
 	public static boolean isMatch(String peptide1, String peptide2, List<Integer> positions, boolean condition) {
-		// TODO: AJS confirmed exact match for * but the characters like B etc???
+		// TODO: AJS confirmed exact match for * but the characters like B
+		// etc???
 		if (condition == true) {
 			for (int position : positions) {
 				if (peptide1.charAt(position - 1) == peptide2.charAt(position - 1)) {
