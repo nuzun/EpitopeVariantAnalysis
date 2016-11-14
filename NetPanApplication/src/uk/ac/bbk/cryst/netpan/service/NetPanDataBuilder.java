@@ -23,7 +23,7 @@ public class NetPanDataBuilder {
 		PropertiesHelper properties = new PropertiesHelper();
 		this.type = type;
 
-		if ((this.type == PredictionType.MHCII) || (this.type == PredictionType.MHCIIPAN)) {
+		if ((this.type == PredictionType.MHCII) || (this.type == PredictionType.MHCIIPAN20) || (this.type == PredictionType.MHCIIPAN31)) {
 			pattern = properties.getValue("scoreFileNamePatternMHCII");
 		} else
 			pattern = properties.getValue("scoreFileNamePatternMHCI");

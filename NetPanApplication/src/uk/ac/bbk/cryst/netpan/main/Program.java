@@ -29,7 +29,7 @@ public class Program {
 		String scoreCode = "0"; // MHC(1) or comb (0) used for CTL only
 		String inputPath = properties.getValue("inputPath");
 		String outputBasePath = properties.getValue("factorOutputPathMHCIIPan");
-		PredictionType type = PredictionType.MHCIIPAN;
+		PredictionType type = PredictionType.MHCIIPAN20;
 		String alleleFileFullPath = inputPath + "testII.csv";
 
 		// Read the alleles from region/group of alleles file

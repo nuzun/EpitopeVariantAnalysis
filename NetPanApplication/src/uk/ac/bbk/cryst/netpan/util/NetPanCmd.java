@@ -43,8 +43,14 @@ public class NetPanCmd {
 					 sequenceFileFullPath + " " +
 					 outputFileFullPath;
 			break;
-		case MHCIIPAN:
+		case MHCIIPAN20:
 			scriptLine = properties.getValue("netMHCIIPanScript") + " "+ allele + " " +
+					 peptideLength + " " + 
+					 sequenceFileFullPath + " " +
+					 outputFileFullPath;
+			break;
+		case MHCIIPAN31:
+			scriptLine = properties.getValue("netMHCIIPan31Script") + " "+ allele + " " +
 					 peptideLength + " " + 
 					 sequenceFileFullPath + " " +
 					 outputFileFullPath;

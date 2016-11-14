@@ -130,12 +130,39 @@ public class NovelSurfaceAnalyzer {
 		return anchorPositions;
 	}
 
+	public void setnMer(int nMer) {
+		this.nMer = nMer;
+	}
+
+	public void setSequenceFileName(String sequenceFileName) {
+		this.sequenceFileName = sequenceFileName;
+	}
+
+	public void setScoreCode(String scoreCode) {
+		this.scoreCode = scoreCode;
+	}
+
+	public void setType(PredictionType type) {
+		this.type = type;
+	}
+
+	public void setVariants(List<String> variants) {
+		this.variants = variants;
+	}
+
+	public void setAnchorPositions(List<Integer> anchorPositions) {
+		this.anchorPositions = anchorPositions;
+	}
+
 	public NovelSurfaceAnalyzer() throws IOException {
+		//parameters
 		nMer = 15;
 		anchorPositions = Arrays.asList(1, 4, 6, 9);
 		sequenceFileName = "customFactorviii_P00451.fasta";
 		scoreCode = "0"; // MHC(1) or comb (0) used for CTL only
-		type = PredictionType.MHCIIPAN;
+		type = PredictionType.MHCIIPAN20;
+		//
+		
 		variants = new ArrayList<String>();
 		properties = new PropertiesHelper();
 		sequenceFactory = new SequenceFactory();

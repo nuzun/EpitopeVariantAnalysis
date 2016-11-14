@@ -26,5 +26,11 @@ public abstract class NetPanFileReader {
 		this.scanner = new Scanner(new FileReader(netFile));
 	}
 	
+	
+	public PredictionType getType() {
+		return type;
+	}
+
+
 	protected abstract NetPanData read() throws Exception;
 }

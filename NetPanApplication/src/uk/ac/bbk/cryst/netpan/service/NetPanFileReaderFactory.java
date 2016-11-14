@@ -17,8 +17,10 @@ public class NetPanFileReaderFactory {
 				return new NetMHCPanReader(netFile, foundProteinNameAndId, foundAllele);
 			case MHCII:
 				return new NetMHCIIReader(netFile, foundProteinNameAndId, foundAllele);
-			case MHCIIPAN:
+			case MHCIIPAN20:
 				return new NetMHCIIPanReader(netFile, foundProteinNameAndId, foundAllele);
+			case MHCIIPAN31:
+				return new NewNetMHCIIPanReader(netFile, foundProteinNameAndId, foundAllele);
 			default: 
 				return null;
 		}

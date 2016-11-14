@@ -14,8 +14,8 @@ public class OutPathProcessor {
 	
 	public static void main(String[] args) throws Exception {
 	
-		File pathToRead = new File(properties.getValue("factorOutputPathMHCIIPan"));
-		PredictionType type = PredictionType.MHCIIPAN;
+		File pathToRead = new File(properties.getValue("testOutputPathMHCIIPan"));
+		PredictionType type = PredictionType.MHCIIPAN31;
 		NetPanDataBuilder builder = new NetPanDataBuilder(type);
 		
 		//read the testProtein_P00451 directory
@@ -23,10 +23,10 @@ public class OutPathProcessor {
 			if(fileEntry.isDirectory()){
 				//read the allele group directory: testII
 				for(final File groupPath : fileEntry.listFiles()){
-					String groupName = groupPath.getName();
+					//String groupName = groupPath.getName();
 					//read prediction files in the testII folder
 					List<NetPanData> netPanDataList = builder.buildFileData(groupPath);
-					printEpitopes(netPanDataList);
+					printAll(netPanDataList);
 				
 				}//for
 			}//if
@@ -37,6 +37,16 @@ public class OutPathProcessor {
 	private static void printEpitopes(List<NetPanData> netPanDataList) {
 		for(NetPanData netPanData : netPanDataList){
 			List<PeptideData> peptideList = netPanData.getEpitopes();
+			System.out.println(netPanData.getFastaFileName() +" " +netPanData.getAllele());
+			for(PeptideData peptide : peptideList){
+				System.out.println(peptide.toString());
+			}
+		}
+	}
+	
+	private static void printAll(List<NetPanData> netPanDataList){
+		for(NetPanData netPanData : netPanDataList){
+			List<PeptideData> peptideList = netPanData.getPeptideList();
 			System.out.println(netPanData.getFastaFileName() +" " +netPanData.getAllele());
 			for(PeptideData peptide : peptideList){
 				System.out.println(peptide.toString());
